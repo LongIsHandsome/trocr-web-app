@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  ocr-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      # This is useful for development, so changes in your code are reflected without rebuilding
+      # For production, you might remove this or be more selective
+      - .:/app
+      # If your model downloads to a specific cache directory, you might want to persist it
+      # This example assumes the model is downloaded to a default location within the container
+      # - ./model_cache:/root/.cache/huggingface # Example: adjust path as needed
+    environment:
+      # These environment variables are already set in your Dockerfile,
+      # but explicitly listing them here can be good for clarity
+      - FLASK_APP=app.py
+      - FLASK_RUN_HOST=0.0.0.0
+      - FLASK_ENV=production
+    # If your application relies on a GPU for torch, uncomment the deploy section
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
