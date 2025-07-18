@@ -7,6 +7,7 @@ from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
 from transformers import TrOCRProcessor, VisionEncoderDecoderModel, logging
 from TrOCR import segment_into_lines, run_trOCR
+from waitress import serve
 
 # Suppress transformer warnings
 logging.set_verbosity_error()
@@ -77,4 +78,8 @@ def index():
                            elapsed=elapsed)
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    # development
+    # app.run(debug=False, host="0.0.0.0")
+    
+    # production
+    serve(app, host="0.0.0.0", port=5000)
