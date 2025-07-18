@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handwritten Text Recognition</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Handwritten Text Recognition</h1>
+
+        <div class="loading-overlay" id="loadingOverlay">
+            <div aria-label="Orange and tan hamster running in a metal wheel" role="img" class="wheel-and-hamster">
+                <div class="wheel"></div>
+                <div class="hamster">
+                    <div class="hamster__body">
+                        <div class="hamster__head">
+                            <div class="hamster__ear"></div>
+                            <div class="hamster__eye"></div>
+                            <div class="hamster__nose"></div>
+                        </div>
+                        <div class="hamster__limb--fr"></div>
+                        <div class="hamster__limb--fl"></div>
+                        <div class="hamster__limb--br"></div>
+                        <div class="hamster__limb--bl"></div>
+                        <div class="hamster__tail"></div>
+                    </div>
+                </div>
+                <div class="spoke"></div>
+            </div>
+            <p>Processing image...</p>
+            <p id="processingTimer" class="processing-timer"></p> </div>
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <label for="file-input" class="custum-file-upload" id="customFileUpload">
+                <div class="icon">
+                    <svg viewBox="0 0 24 24" fill="" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" d="M10 1C9.73478 1 9.48043 1.10536 9.29289 1.29289L3.29289 7.29289C3.10536 7.48043 3 7.73478 3 8V20C3 20.2652 3.10536 20.5196 3.29289 20.7071C3.48043 20.8946 3.73478 21 4 21H20C20.2652 21 20.5196 20.8946 20.7071 20.7071C20.8946 20.5196 21 20.2652 21 20V8C21 7.73478 20.8946 7.48043 20.7071 7.29289L14.7071 1.29289C14.5196 1.10536 14.2652 1 14 1H10ZM9 6H5V8H9V6ZM15 6V8H19V6H15Z" clip-rule="evenodd"></path> </g></svg>
+                </div>
+                <div class="text">
+                    <span>Drop files here or click to upload</span>
+                    <span class="file-name" id="selectedFileName"></span>
+                </div>
+                <input type="file" id="file-input" name="image" accept=".png, .jpg, .jpeg, .bmp" required>
+            </label>
+            <img id="imagePreview" src="#" alt="Image Preview" style="display: none; max-width: 300px; max-height: 200px; border: 2px solid #ddd; border-radius: 10px; object-fit: contain;"/>
+
+            <button type="submit" class="button type--A">
+                <div class="button__line"></div>
+                <div class="button__line"></div>
+                <span class="button__text">Upload</span>
+                <div class="button__drow1"></div>
+                <div class="button__drow2"></div>
+            </button>
+        </form>
+
+        {% if ocr_text or img_data or proj_data %}
+        <hr class="results-divider"/>
+        <div class="results">
+            {% if elapsed %}
+                <div class="processing-time">
+                    Processing Time: {{ elapsed }} seconds
+                </div>
+            {% endif %}
+
+            {% if img_data %}
+            <div class="image-section">
+                <h2>Annotated Image</h2>
+                <img src="data:image/png;base64,{{ img_data }}" alt="Annotated Image">
+            </div>
+            {% endif %}
+
+            {% if proj_data %}
+            <div class="image-section">
+                <h2>Projection Plot</h2>
+                <img src="data:image/png;base64,{{ proj_data }}" alt="Projection Plot">
+            </div>
+            {% endif %}
+
+            {% if ocr_text %}
+            <div class="ocr-output">
+                <div class="ocr-header-wrapper">
+                    <h2>Extracted Text</h2>
+                    <div class="search-group">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" class="icon">
+                            <g>
+                                <path d="M21.53 20.47l-3.66-3.66C19.195 15.24 20 13.21 20 11c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.21 0 4.24-.804 5.81-2.19l3.66 3.66c.14.14.34.22.53.22s.39-.08.53-.22c.29-.29.29-.77 0-1.06zM4 11c0-3.86 3.14-7 7-7s7 3.14 7 7-3.14 7-7 7-7-3.14-7-7z"></path>
+                            </g>
+                        </svg>
+                        <input class="input" type="search" id="textSearchInput" placeholder="Search text...">
+                    </div>
+                    </div>
+                <pre id="ocrTextContent">{{ ocr_text }}</pre>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
