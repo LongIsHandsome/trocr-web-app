@@ -5,12 +5,22 @@ import time
 import torch
 from flask import Flask, request, render_template
 from werkzeug.utils import secure_filename
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel, logging
+from transformers import TrOCRProcessor, VisionEncoderDecoderModel, logging as tr_logging
 from TrOCR import segment_into_lines, run_trOCR
 from waitress import serve
+import logging
+
+# Configure global logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+# Turn on waitress logs
+logging.getLogger("waitress").setLevel(logging.INFO)
+logging.getLogger("waitress").propagate = True
 
 # Suppress transformer warnings
-logging.set_verbosity_error()
+tr_logging.set_verbosity_error()
 
 # Flask setup
 app = Flask(__name__)
@@ -25,7 +35,7 @@ MODEL_NAME = "microsoft/trocr-large-handwritten"
 processor = TrOCRProcessor.from_pretrained(MODEL_NAME, use_fast=True)
 model = VisionEncoderDecoderModel.from_pretrained(MODEL_NAME)
 model.to(DEVICE)
-print(f"Model loaded on {DEVICE}")
+app.logger.info(f"Model loaded on {DEVICE}")
 
 ALLOWED_EXT = {"png", "jpg", "jpeg", "bmp"}
 def allowed_file(filename):
