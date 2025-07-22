@@ -70,8 +70,6 @@ These instructions will get you a copy of the project up and running on your loc
     pip install -r requirements.txt
     ```
 
-    (Note: A `requirements.txt` file is assumed to exist with the necessary dependencies based on the `app.py` imports).
-
 4.  **Initialize the database:**
     The `app.py` script automatically initializes the SQLite database and creates the `users` table on startup using `create.sql`.
 
