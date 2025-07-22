@@ -107,13 +107,6 @@ The core of this application lies in its OCR pipeline, particularly the `TrOCR.p
 
 -----
 
-## 🔗 GitHub Repository
-
-This project is open-source and available on GitHub:
-[LongIsHandsome/trocr-webapp](https://www.google.com/search?q=https://github.com/LongIsHandsome/trocr-webapp)
-
------
-
 ## Acknowledgments
 
   * The TrOCR model is provided by Microsoft and accessible through the Hugging Face Transformers library.
