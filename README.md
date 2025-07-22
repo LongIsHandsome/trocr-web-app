@@ -1,163 +1,129 @@
-# Handwritten Text Recognition (HTR) Application
+# Handwritten Text Recognition (HTR) Web Application
 
-This project is a web-based application for **Handwritten Text Recognition (HTR)**, allowing users to upload images containing handwritten text and obtain the extracted digital text. It utilizes the **TrOCR (Transformer-based Optical Character Recognition)** model for accurate text recognition and includes image processing steps for line segmentation and visualization.
+This repository hosts a robust web application designed for **Handwritten Text Recognition (HTR)**, leveraging state-of-the-art deep learning models and advanced image processing techniques. Users can upload handwritten image files and receive digitized text outputs, with features like dynamic text highlighting and a user-friendly interface.
 
-**GitHub Repository**: [https://github.com/LongIsHandsome/trocr-webapp](https://github.com/LongIsHandsome/trocr-webapp)
+-----
 
-## Features
+## ✨ Features
 
-* **Upload Images**: Easily upload handwritten image files (PNG, JPG, JPEG, BMP).
-* **Automatic Line Segmentation**: The application automatically segments the uploaded image into individual text lines using horizontal projection.
-* **TrOCR Integration**: Leverages the `microsoft/trocr-large-handwritten` model for high-accuracy handwritten text recognition.
-* **Annotated Image Output**: Displays the uploaded image with detected text lines highlighted by bounding boxes.
-* **Horizontal Projection Profile Plot**: Visualizes the horizontal projection profile used for line segmentation.
-* **Extracted Text Display**: Shows the recognized text, organized by lines.
-* **Search Functionality**: Allows searching within the extracted text with highlighting.
-* **Processing Time Indicator**: Provides feedback on how long the OCR process takes.
-* **Responsive and User-Friendly Interface**: Built with Flask and a clean, modern front-end design.
+  * **Accurate HTR**: Utilizes **Microsoft TrOCR** (Transformer-based Optical Character Recognition) for highly accurate transcription of handwritten content.
+  * **Image Preprocessing Pipeline**: Incorporates sophisticated image processing steps, including **binarization** and **horizontal projection profile analysis**, to robustly segment text lines from complex handwritten documents.
+  * **User Authentication**: Secure user registration and login system, managing user sessions for personalized interactions.
+  * **Interactive OCR Output**: Displays processed images with bounding boxes around detected text, along with searchable OCR text output.
+  * **Dynamic Text Highlighting**: Real-time highlighting of search terms within the extracted text for enhanced readability and analysis.
+  * **Dark Mode**: A toggleable dark mode interface for improved visual comfort.
+  * **Responsive Web Design**: Ensures a seamless experience across various devices.
+  * **Drag-and-Drop File Upload**: Convenient image submission via drag-and-drop or traditional file input.
+  * **Performance Metrics**: Displays the processing time for each OCR operation.
 
----
+-----
 
-## Technologies Used
+## 🛠️ Technologies Used
 
-* **Backend**:
-    * **Python**: The core programming language.
-    * **Flask**: A micro web framework for the backend API.
-    * **Transformers (Hugging Face)**: For loading and using the TrOCR model.
-    * **PyTorch**: The deep learning framework underlying the TrOCR model.
-    * **OpenCV (`cv2`)**: For image processing tasks like loading, grayscale conversion, thresholding, and drawing annotations.
-    * **Pillow (PIL)**: For image manipulation, especially converting between OpenCV and PIL formats.
-    * **Numpy**: For numerical operations, particularly in image processing.
-    * **Matplotlib**: For generating the horizontal projection profile plot.
-    * **Waitress**: A production-quality pure-Python WSGI server.
-* **Frontend**:
-    * **HTML5**: Structure of the web pages.
-    * **CSS3**: Styling and responsive design.
-    * **JavaScript**: Client-side interactivity, including file upload handling, drag-and-drop, loading animations, and search functionality.
-* **Deployment**:
-    * **Docker**: For containerizing the application, ensuring consistent environments and easy deployment.
-    * **Docker Compose**: For defining and running multi-container Docker applications (though currently, it defines a single service).
+  * **Backend**:
 
----
+      * **Flask**: A micro web framework for Python, used for routing, request handling, and rendering templates.
+      * **PyTorch**: An open-source machine learning framework, providing the underlying tensor computations for the TrOCR model.
+      * **Hugging Face Transformers**: Leverages pre-trained `TrOCRProcessor` and `VisionEncoderDecoderModel` for robust HTR capabilities.
+      * **OpenCV (`cv2`)**: Employed for advanced image manipulation and preprocessing tasks, including image loading, thresholding, and drawing bounding boxes.
+      * **NumPy**: Essential for numerical operations, particularly in image processing and horizontal projection calculations.
+      * **SQLite3**: A lightweight, file-based database used for managing user credentials.
+      * **Werkzeug Security**: For secure password hashing and checking.
+      * **Waitress**: A production-quality pure-Python WSGI server.
 
-## Core OCR Logic Explained
+  * **Frontend**:
 
-### 1. Overall Workflow
+      * **HTML5**: Structures the web content.
+      * **CSS3**: Styles the application, including custom themes and responsive design.
+      * **JavaScript**: Handles client-side interactivity, dynamic content updates, and user experience enhancements.
 
-When a user uploads an image, the application follows these high-level steps:
+-----
 
-1.  **Image Pre-processing**: The uploaded image undergoes transformations to enhance text clarity.
-2.  **Line Segmentation**: The pre-processed image is analyzed to separate individual lines of text.
-3.  **Optical Character Recognition (OCR)**: Each segmented line is fed to the TrOCR deep learning model for recognition.
-4.  **Result Aggregation & Display**: Recognized text from all lines is combined, and the original image is annotated with bounding boxes, then displayed to the user.
+## 🚀 Getting Started
 
-<br>
-
-### 2. Image Pre-processing for Line Segmentation
-
-Before line identification, the image is cleaned and prepared. This occurs in the `segment_into_lines` function within `TrOCR.py`:
-
-* **Grayscale Conversion**: The input image is converted to **grayscale** (`cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)`). This simplifies the image, focusing on intensity rather than color.
-* **Otsu's Method (Binarization)**: The grayscale image is then **binarized**, turning each pixel into pure black (0) or pure white (255). **Otsu's method** automatically finds the optimal threshold by minimizing variance between foreground (text) and background pixels, adapting to varying conditions. `cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)` applies this, with `THRESH_BINARY_INV` ensuring text pixels are white for subsequent projection. 
-
-<br>
-
-### 3. Horizontal Projection Profile (HPP) and Gaussian Filtering
-
-The HPP is critical for identifying spaces between text lines:
-
-* **Generating the HPP**: For each row of the binarized image, pixel values (0 or 255) are summed. Rows with text (white pixels) yield higher sums, while white spaces between lines yield lower sums. This creates a 1D array representing pixel sum per row: `projection = np.sum(thresh, axis=1)`. 
-* **Gaussian Filter**: To reduce noise and make peaks/valleys more distinct, a **Gaussian filter** is applied to smooth the HPP. This averages local variations using a bell-shaped curve, improving the robustness of gap detection. `projection = gaussian_filter1d(projection.astype(float), sigma=3)` performs this smoothing.
-
-<br>
-
-### 4. Line Segmentation
-
-Using the smoothed HPP, individual text lines are precisely segmented:
-
-* **Identifying Valleys**: The core idea is to find "valleys" in the HPP, which correspond to horizontal blank spaces between text lines, indicating low text density.
-* **Thresholding the Profile**: A threshold is applied to distinguish text-dense areas from inter-line spaces.
-* **Grouping and Cropping**: Continuous regions of high projection values are grouped as potential text lines. The original image is then cropped for each identified line, and their bounding box coordinates are recorded.
-* **Filtering by Height**: Segments are filtered by height to discard noise or artifacts, ensuring only plausible text lines are passed to the OCR model.
-
-<br>
-
-### 5. TrOCR Model Inference
-
-Finally, the text recognition occurs:
-
-* **Model Loading**: `app.py` loads the pre-trained `microsoft/trocr-large-handwritten` model and processor from Hugging Face. The model automatically moves to "cuda" (GPU) if available, or defaults to "cpu" for faster inference.
-* **Per-Line Processing**: Each segmented line image is passed to the `run_trOCR` function.
-* **TrOCR Processor**: The `TrOCRProcessor` (combining a tokenizer and feature extractor) prepares the image by resizing, normalizing, and converting it to the model's required format.
-* **TrOCR Model**: The prepared features are fed into the `VisionEncoderDecoderModel`. This model's **Encoder** (a Vision Transformer) extracts visual features, and its **Decoder** (a Transformer-based language model) generates the corresponding text sequence.
-* **Text Decoding**: The model outputs token IDs, which the `TrOCRProcessor` decodes into human-readable text strings.
-
-This modular pipeline efficiently handles image preparation and accurate handwritten text recognition using a powerful deep learning model.
-
----
-
-## Getting Started
-
-Follow these instructions to set up and run the project locally using Docker.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 
-* [**Docker Desktop**](https://www.docker.com/products/docker-desktop) (for Windows/macOS) or [**Docker Engine**](https://docs.docker.com/engine/install/) (for Linux) installed on your machine.
-    * If you have an NVIDIA GPU and want to enable GPU acceleration, ensure you have the latest NVIDIA drivers and the [**NVIDIA Container Toolkit**](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (for Linux) or [**WSL2 with NVIDIA WSL drivers**](https://developer.nvidia.com/cuda/wsl) (for Windows) properly configured.
+  * Python 3.8+
+  * `pip` (Python package installer)
 
-### Installation and Running
+### Installation
 
 1.  **Clone the repository:**
+
     ```bash
     git clone https://github.com/LongIsHandsome/trocr-webapp.git
     cd trocr-webapp
     ```
 
-2.  **Build and Run with Docker Compose:**
-    Navigate to the root directory of your project where the `docker-compose.yml` and `Dockerfile` are located.
+2.  **Create a virtual environment** (recommended):
 
     ```bash
-    docker compose up --build -d
-    ```
-    * The `--build` flag tells Docker Compose to build the image first.
-    * The `-d` flag runs the container in detached mode (in the background).
-
-    **Note on GPU:** If you have an NVIDIA GPU and wish to use it, ensure the `deploy` section is uncommented in `docker-compose.yml`. If you **do not** have an NVIDIA GPU, ensure that section is commented out to avoid errors. The application will automatically fall back to CPU if a GPU is not detected or configured.
-
-3.  **Access the Application:**
-    Once the container is running, open your web browser and navigate to:
-    ```
-    http://localhost:5000
+    python -m venv venv
+    source venv/bin/activate  # On Windows: `venv\Scripts\activate`
     ```
 
----
+3.  **Install the required Python packages:**
 
-## Project Structure
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-* `app.py`: The main Flask application file. It handles image uploads, calls the TrOCR model, processes results, and serves the web interface.
-* `TrOCR.py`: Contains utility functions for image processing, such as horizontal projection for line segmentation and the `run_trOCR` function for performing OCR with the TrOCR model.
-* `requirements.txt`: Lists all Python dependencies required by the project.
-* `Dockerfile`: Defines the Docker image for the application, including dependencies and setup instructions.
-* `docker-compose.yml`: Defines how to build and run the application services using Docker Compose.
-* `static/`:
-    * `script.js`: Client-side JavaScript for interactive elements, including file handling, drag-and-drop, and search functionality.
-    * `style.css`: Cascading Style Sheets for the application's visual design.
-* `templates/`:
-    * `index.html`: The main HTML template for the web interface.
-* `uploads/` (created at runtime): A directory to temporarily store uploaded images.
-* `.gitignore`: Specifies files and directories to be ignored by Git.
-* `README.md`: This file.
+    (Note: A `requirements.txt` file is assumed to exist with the necessary dependencies based on the `app.py` imports).
 
----
+4.  **Initialize the database:**
+    The `app.py` script automatically initializes the SQLite database and creates the `users` table on startup using `create.sql`.
+
+-----
+
+## 🏃 Running the Application
+
+To run the Flask application:
+
+```bash
+python app.py
+```
+
+The application will typically be accessible at `http://127.0.0.1:5000/`.
+
+-----
+
+## 📈 OCR Process Explained
+
+The core of this application lies in its OCR pipeline, particularly the `TrOCR.py` module which orchestrates the following sequential image processing and recognition steps:
+
+1.  **Image Loading and Grayscale Conversion**: The input handwritten image is initially loaded using `cv2.imread` and then converted from its original color format (e.g., BGR) to a single-channel **grayscale** image using `cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)`. Grayscale conversion simplifies subsequent processing by reducing dimensionality.
+
+2.  **Binarization via Otsu's Method**: The grayscale image undergoes **binarization**, a critical step to convert it into a binary (black and white) image. This application specifically employs **Otsu's method** (`cv2.THRESH_OTSU`). Otsu's method automatically determines an optimal global threshold value by minimizing the intra-class variance of the foreground and background pixels. This robust statistical approach effectively separates text (foreground) from the document background, resulting in a cleaner image for analysis. The image is also inverted (`cv2.THRESH_BINARY_INV`) so that text pixels are white on a black background, which is often preferred for projection-based analysis.
+
+3.  **Horizontal Projection Profile Generation**: A **horizontal projection profile** is computed by summing the pixel intensities along each row of the binarized image (`np.sum(thresh, axis=1)`). This profile is a 1D array where each element represents the total number of white (text) pixels in that row. Peaks in this profile indicate regions of text, while valleys suggest spaces between text lines.
+
+4.  **Noise Reduction with Gaussian Filter**: To smooth the horizontal projection profile and reduce spurious noise that might lead to erroneous line segmentation, a **Gaussian filter** (`gaussian_filter1d`) is applied. The Gaussian filter is a linear smoothing filter that uses a Gaussian function to calculate the transformation of each pixel. In this context, it blurs the projection profile, making the peaks and valleys more distinct and less susceptible to minor pixel variations, thereby improving the accuracy of line detection.
+
+5.  **Text Line Segmentation**: By analyzing the smoothed horizontal projection profile, the `segment_into_lines` function precisely identifies and segments the image into individual text lines. This process typically involves detecting significant valleys (low pixel sums) that correspond to the spaces between lines. The segmented regions are then cropped from the original image.
+
+6.  **TrOCR Model Inference**: Each segmented text line, now an individual image, is prepared for inference. It is converted to a PIL Image object and then processed by the `TrOCRProcessor` and fed into the pre-trained **Microsoft TrOCR** (`VisionEncoderDecoderModel`). TrOCR, a state-of-the-art Transformer-based model, treats OCR as an image-to-text sequence generation task, leveraging the power of attention mechanisms to transcribe handwritten content with high accuracy.
+
+7.  **Result Aggregation and Annotation**: The transcribed text from each line is aggregated to form the complete OCR output for the document. Concurrently, the original image is annotated with **bounding boxes** (`cv2.rectangle`) around the detected text lines, visually representing the segmentation and recognition areas. Both the annotated image and the extracted textual content are then prepared for display on the web interface.
+
+-----
+
+## 🔗 GitHub Repository
+
+This project is open-source and available on GitHub:
+[LongIsHandsome/trocr-webapp](https://www.google.com/search?q=https://github.com/LongIsHandsome/trocr-webapp)
+
+-----
 
 ## Acknowledgments
 
-* The TrOCR model is provided by Microsoft and accessible through the Hugging Face Transformers library.
-* Some of the UI components are adapted from [Uiverse](https://uiverse.io/).
+  * The TrOCR model is provided by Microsoft and accessible through the Hugging Face Transformers library.
+  * Some of the UI components are adapted from [Uiverse](https://uiverse.io/).
 
----
+-----
 
 ## Credit
 
-* This project is vibe-coded with ChatGPT 4o-mini and Gemini 2.5 Flash and Pro.
-* This README file is generated by Google Gemini 2.5 Flash.
+  * This project is vibe-coded with ChatGPT 4o-mini and Gemini 2.5 Flash and Pro.
+  * This README file is generated by Google Gemini 2.5 Flash.
