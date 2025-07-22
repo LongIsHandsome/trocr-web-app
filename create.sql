@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username VARCHAR(255) UNIQUE,
+    hashed_password VARCHAR(255)
+);

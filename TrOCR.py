@@ -26,10 +26,12 @@ def plot_horizontal_projection(projection, output_path: str):
     plt.close()
 
 
-def segment_into_lines(image_path: str, height_ratio_threshold: float = 0.75) -> list:
+# MODIFIED: Added proj_output_path to the function signature
+def segment_into_lines(image_path: str, height_ratio_threshold: float = 0.75, proj_output_path: str = None) -> list:
     """
     Segment the input image into text lines using horizontal projection.
     Returns a list of (PIL.Image, (x1, y1, x2, y2)).
+    Accepts proj_output_path to save the projection plot with a specific filename.
     """
     image = cv2.imread(image_path)
     if image is None:
@@ -41,11 +43,10 @@ def segment_into_lines(image_path: str, height_ratio_threshold: float = 0.75) ->
     projection = np.sum(thresh, axis=1)
     smoothed = gaussian_filter1d(projection, sigma=3)
 
-    # Optionally save projection plot
-    if ENABLE_PLOTTING:
-        os.makedirs(os.path.dirname(image_path), exist_ok=True)
-        plot_path = os.path.join(os.path.dirname(image_path), 'horizontal.png')
-        plot_horizontal_projection(smoothed, plot_path)
+    # Optionally save projection plot with the provided unique path
+    if ENABLE_PLOTTING and proj_output_path:
+        os.makedirs(os.path.dirname(proj_output_path), exist_ok=True)
+        plot_horizontal_projection(smoothed, proj_output_path)
 
     # Identify segments where projection > threshold
     threshold = smoothed.max() * 0.2
