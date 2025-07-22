@@ -106,16 +106,25 @@ form {
 .error-message {
     color: var(--error-text);
     background-color: var(--error-bg);
-    border: 1px solid var(--error-border);
-    padding: 10px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    width: 100%;
+    border: 1px solid var(--error-text);
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
     text-align: center;
-    box-sizing: border-box;
-    font-weight: 500;
 }
 
+/* Success message styles */
+.success-message {
+    color: #1a7f37; /* A dark green for text */
+    background-color: #e6ffed; /* A light green for background */
+    border: 1px solid #1a7f37;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    font-size: 0.9em;
+    text-align: center;
+}
 
 /* Added for form groups in login/register */
 .form-group {

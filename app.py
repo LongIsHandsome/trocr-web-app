@@ -89,7 +89,8 @@ def register():
         try:
             db.execute("INSERT INTO users (username, hashed_password) VALUES (?, ?)", (username, hashed_password))
             db.commit()
-            return redirect(url_for('login'))
+            # Redirect to login with a success message
+            return redirect(url_for('login', success_message="Registration successful! Please log in."))
         except sqlite3.IntegrityError:
             # Username already exists
             return render_template("register.html", error_message="Username already taken. Please choose another.")
@@ -103,6 +104,9 @@ def login():
         return redirect(url_for('index'))
     
     error_message = None
+    # Retrieve success message from query parameters
+    success_message = request.args.get('success_message')
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -118,7 +122,8 @@ def login():
             # Invalid credentials
             error_message = "Invalid username or password."
             
-    return render_template("login.html", error_message=error_message)
+    # Pass both error_message and success_message to the template
+    return render_template("login.html", error_message=error_message, success_message=success_message)
 
 @app.route("/logout")
 @login_required

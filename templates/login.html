@@ -49,6 +49,12 @@
         </div>
         {% endif %}
 
+        {% if success_message %}
+        <div class="success-message">
+            {{ success_message }}
+        </div>
+        {% endif %}
+
         <form method="POST">
             <div class="form-group">
                 <label for="username">Username</label>
